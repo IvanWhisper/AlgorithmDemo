@@ -260,3 +260,188 @@ key=6
         }
 
 ```
+
+# 常规算法之二叉树
+## Binary Tree 二叉树
+#### 简介
+在计算机科学中，二叉树是每个结点最多有两个子树的树结构。通常子树被称作“左子树”（left subtree）和“右子树”（right subtree）。二叉树常被用于实现二叉查找树和二叉堆。
+一棵深度为k，且有2^k-1个结点的二叉树，称为满二叉树。这种树的特点是每一层上的结点数都是最大结点数。而在一棵二叉树中，除最后一层外，若其余层都是满的，并且或者最后一层是满的，或者是在右边缺少连续若干结点，则此二叉树为完全二叉树。具有n个结点的完全二叉树的深度为floor(log2n)+1。深度为k的完全二叉树，至少有2k-1个叶子结点，至多有2k-1个结点。
+#### 二叉树遍历
++ (NLR)先序遍历-深度遍历
+首先访问根，再先序遍历左（右）子树，最后先序遍历右（左）子树
++ (LNR)中序遍历-深度遍历
+首先中序遍历左（右）子树，再访问根，最后中序遍历右（左）子树
++ (LRN)后序遍历-深度遍历
+首先后序遍历左（右）子树，再后序遍历右（左）子树，最后访问根
++ 层次遍历-广度遍历
+即按照层次访问，通常用队列来做。访问根，访问子女，再访问子女的子女（越往后的层次越低）（两个子女的级别相同）
+![avatar](https://img-blog.csdn.net/20150204101904649?%3C/p%3E%3Cp%3Ewatermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvTXlfSm9icw==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
+前序遍历：1  2  4  5  7  8  3  6 
+中序遍历：4  2  7  5  8  1  3  6
+后序遍历：4  7  8  5  2  6  3  1
+层次遍历：1  2  3  4  5  6  7  8
+#### 前序遍历
+##### 递归实现
+前序遍历按照“根结点-左孩子-右孩子”的顺序进行访问
+```C#
+        /// <summary>
+        /// 前序遍历(递归实现)
+        /// </summary>
+        /// <param name="node"></param>
+        public static void PreOrderWithRecursion<T>(TreeNode<T> node, List<TreeNode<T>> result=null)
+        {
+            //首先访问根结点，然后遍历其左子树，最后遍历其右子树。
+            if (node == null)
+            {
+                return;
+            }
+            result?.Add(node);
+            PreOrderWithRecursion(node.LeftChild, result);
+            PreOrderWithRecursion(node.RightChild, result);
+        }
+```
+##### 非递归实现
+根据前序遍历访问的顺序，优先访问根结点，然后再分别访问左孩子和右孩子。即对于任一结点，其可看做是根结点，因此可以直接访问，访问完之后，若其左孩子不为空，按相同规则访问它的左子树；当访问完左子树时，再访问它的右子树。
+```C#
+        /// <summary>
+        /// 前序遍历
+        /// </summary>
+        /// <param name="node"></param>
+        public static void PreOrder<T>(TreeNode<T> node, List<TreeNode<T>> result = null)
+        {
+            Stack<TreeNode<T>> s = new Stack<TreeNode<T>>();
+            TreeNode<T> curNode = node;
+            s.Push(node);
+            while (s.Count > 0)
+            {
+                result?.Add(curNode);
+                if (curNode.RightChild != null)
+                {
+                    s.Push(curNode.RightChild);
+                }
+                if (curNode.LeftChild != null)
+                {
+                    curNode = curNode.LeftChild;
+                }
+                else
+                {
+                    //左子树访问完了，访问右子树
+                    curNode = s.Pop();
+                }
+            }
+        }
+```
+#### 中序遍历
+##### 递归实现
+```C#
+        /// <summary>
+        /// 中序遍历（递归实现）
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="node"></param>
+        public static void MidOrderWithRecursion<T>(TreeNode<T> node, List<TreeNode<T>> result = null)
+        {
+            //中序遍历：首先遍历其左子树，然后访问根结点，最后遍历其右子树。
+            if (node == null)
+            {
+                return;
+            }
+            MidOrderWithRecursion(node.LeftChild, result);
+            result?.Add(node);
+            MidOrderWithRecursion(node.RightChild, result);
+        }
+```
+##### 非递归实现
+```C#
+        /// <summary>
+        /// 中序遍历
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="node"></param>
+        public static void MidOrder<T>(TreeNode<T> node, List<TreeNode<T>> result = null)
+        {
+            //根据中序遍历的顺序，对于任一结点，优先遍历其左孩子，而左孩子结点不为空，
+            //然后继续遍历其左孩子结点，
+            //直到遇到左孩子结点为空的结点才进行访问，
+            //然后按相同的规则访问其右子树。
+            Stack<TreeNode<T>> s = new Stack<TreeNode<T>>();
+            TreeNode<T> curNode = node;
+            while (curNode != null || s.Count > 0)
+            {
+                while (curNode != null)
+                {
+                    s.Push(curNode);
+                    curNode = curNode.LeftChild;
+                }
+                if (s.Count > 0)
+                {
+                    curNode = s.Pop();
+                    result?.Add(curNode);
+                    curNode = curNode.RightChild;
+                }
+            }
+        }
+```
+#### 后序遍历
+##### 递归实现
+```C#
+         /// <summary>
+        /// 后序遍历(递归实现)
+        /// </summary>
+        /// <param name="node"></param>
+        public static void LastOrderWithRecursion<T>(TreeNode<T> node, List<TreeNode<T>> result = null)
+        {
+            //首先遍历其左子树，然后遍历其右子树，最后访问根结点。
+            if (node == null)
+            {
+                return;
+            }
+            LastOrderWithRecursion(node.LeftChild, result);
+            LastOrderWithRecursion(node.RightChild, result);
+            result?.Add(node);
+        }
+```
+##### 非递归实现
+后序遍历的非递归实现是三种遍历方式中最难的一种。因为在后序遍历中，要保证左孩子和右孩子都已被访问并且左孩子在右孩子前访问才能访问根结点，这就为流程的控制带来了难题。
+1. 把根节点入栈
+2. 取得栈顶元素，如果当前结点没有孩子节点或者孩子节点都已经被访问，那么出栈，访问其数据
+3. 否则，如果右孩子节点不为空，入栈。如果左孩子不为空，入栈。要保证入栈顺序，先右孩子再左孩子节点。
+4. 只要栈中还有元素，就循环执行2.3.
+注意：要保证根结点在左孩子和右孩子访问之后才能访问
+```C#
+        /// <summary>
+        /// 后序遍历
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="node"></param>
+        public static void LastOrder<T>(TreeNode<T> node, List<TreeNode<T>> result = null)
+        {
+            Stack<TreeNode<T>> s = new Stack<TreeNode<T>>();
+            TreeNode<T> curNode = null;
+            TreeNode<T> preNode = null;
+            s.Push(node);
+            while (s.Count > 0)
+            {
+                curNode = s.Peek();
+                if ((curNode.LeftChild == null && curNode.RightChild == null) ||
+                    (preNode != null && (preNode == curNode.LeftChild || preNode == curNode.RightChild)))
+                {
+                    result?.Add(curNode);
+                    s.Pop();
+                    preNode = curNode;
+                }
+                else
+                {
+                    if (curNode.RightChild != null)
+                    {
+                        s.Push(curNode.RightChild);
+                    }
+                    if (curNode.LeftChild != null)
+                    {
+                        s.Push(curNode.LeftChild);
+                    }
+                }
+            }
+        }
+
+```
